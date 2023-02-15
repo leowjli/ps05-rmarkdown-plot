@@ -5,8 +5,9 @@ You should answer the questions below in that file, knit it, and submit both the
 
 - This problem sets asks you to write extensively when commenting your results. Please write clearly! Answer questions in a way that if the code chunks are hidden then the result is still readable!
  
-– All substantial questions need explanations. You do not have to explain the simple things like “how many rows are there in data”, but if you make a plot of life expectancy, then you should explain what does the plot tell you.
-– Write explanations as markdown and use the styles like bold and italic as appropriate.
+    – All substantial questions need explanations. You do not have to explain the simple things like “how many rows are there in data”, but if you make a plot of life expectancy, then you should explain what does the plot tell you.
+    
+    – Write explanations as markdown and use the styles like bold and italic as appropriate.
 
 - Do not print too much results. It is all well to print a few lines of data for evaluation/demonstration purposes. But do not print dozens (or thousands!) of lines–no one bothers to look at that many numbers. You will lose points for annoying others (here your graders, but later potentially your boss).
 
