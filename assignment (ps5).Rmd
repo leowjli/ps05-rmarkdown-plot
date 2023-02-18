@@ -38,7 +38,7 @@ You first task is to do a very simple data check:
 
 1. (1pt) For solving the problems, and answering the questions, create a new rmarkdown document with an appropriate title. See [**https://faculty.washington.edu/otoomet/info201-book/r-markdown.html#r-markdown-rstudio-creating**](https://faculty.washington.edu/otoomet/info201-book/r-markdown.html#r-markdown-rstudio-creating). \
 
-```{r message=FALSE}
+```{r message=FALSE, warning=FALSE}
 library(tidyverse)
 ```
 
@@ -64,43 +64,20 @@ The small sample of data looks OK.
 1. (3pt) How many countries are there in the dataset? Analyze all three: *iso3*, *iso2* and *name*.
 ```{r}
 gm %>% 
-  group_by(iso3) %>% 
-  count()
-
-gm %>% 
-  group_by(iso2) %>% 
-  count()
-
-gm %>% 
-  group_by(name) %>% 
-  count()
+  summarize(n_distinct(iso3), n_distinct(iso2), n_distinct(name))
 ```
 
 There are 253 countries for *iso3*, 249 countries for *iso2*, and 250 for *name*.
 
 2. If you did this correctly, you saw that there are more iso-2 codes than names, and there are even more *iso3*-codes. What is going on? Can you find it out?
-```{r}
-gm %>% 
-  filter(is.na(iso3)) %>% 
-  count()
-
-gm %>% 
-  filter(is.na(iso2)) %>% 
-  count()
-
-gm %>% 
-  filter(is.na(name)) %>% 
-  count()
-```
-
-There are some missing values in *names* as well as *iso2* compared to no missing values in *iso3*. *iso2* have more missing values then *name*. It is also possible that the one country code could represent more than one country.
 
     (a) (5pt) Find how many names are there for each iso-2 code. Are there any iso-2 codes that correspond to more than one name? What are these countries?
     ```{r}
     gm %>% 
       group_by(iso2) %>% 
       summarize(cntry = n_distinct(name)) %>% 
-      arrange(desc(cntry))
+      arrange(desc(cntry)) %>% 
+      head(3)
     
     gm %>% 
       filter(is.na(iso2)) %>% 
@@ -114,7 +91,8 @@ There are some missing values in *names* as well as *iso2* compared to no missin
     gm %>% 
       group_by(name) %>% 
       summarize(cntry = n_distinct(iso3)) %>% 
-      arrange(desc(cntry))
+      arrange(desc(cntry)) %>% 
+      head(5)
     
     gm %>% 
       filter(is.na(name)) %>% 
@@ -152,7 +130,7 @@ gm %>%
   filter(dense_rank(desc(co2_pcna)) < 2)
 ```
 
-There are 217 missing co2 emissions each year and the year that has the most missing data is 2019.
+There are 217 missing co2 emissions each year and the year that has the most missing data is 2017 - 2019.
 
 2. (5pt) Make a plot of total CO2 emissions over time for the U.S, China, and India. Add a few more countries of your choice. Explain what do you see. \
 ```{r}
@@ -172,6 +150,7 @@ gm %>%
   ggplot(mapping = aes(time, co2_PC, col=name)) + geom_line()
 ```
 
+From the plot, I can see that the CO2 emission per capita for China, India, Italy and Argentina is relatively low at 0 - 8 kt compared to US starting at 16 kt and Canada at 11
 
 4. (6pt) Compute average CO2 emissions per capita across the continents (assume *region* is the same as continent). Comment what do you see. \
 Note: just compute averages over countries and ignore the fact that countries are of different size. \
@@ -189,7 +168,7 @@ Hint: it should look something along these lines(**Please refer to the spec for 
 ```{r}
 gm %>% 
   group_by(region, time) %>% 
-  filter(time %in% c("1960", "2016"), !is.na(co2_PC)) %>% 
+  filter(time %in% c("1960", "2016"), !is.na(co2_PC), !is.na(region)) %>% 
   summarize(avgco2 = mean(co2_PC)) %>% 
   ggplot(aes(region, avgco2, fill = factor(time))) + geom_col(position = "dodge")
 ```
@@ -218,18 +197,19 @@ gm %>%
   filter(time == 1960, !is.na(name)) %>% 
   ggplot() +
     geom_point(aes(x = lifeExpectancy, y = GDP_PC,
-               size = totalPopulation/1000000, col = region))
+               size = totalPopulation/1000000, col = region),
+               alpha = 0.5)
 ```
 
 
 2. (4pt) Make a similar plot, but this time use 2019 data only. \
 ```{r}
 gm %>% 
-  group_by(name) %>% 
-  filter(time == "2016", !is.na(name)) %>% 
+  filter(time == 2016, !is.na(name)) %>% 
   ggplot() +
     geom_point(aes(x = lifeExpectancy, y = GDP_PC,
-               size = totalPopulation, col = region)
+               size = totalPopulation/1000000, col = region),
+               alpha = 0.5)
 ```
 
 
@@ -251,14 +231,24 @@ gm %>%
 5. (8pt) Compute the average LE growth from 1960-2019 across the continents. Show the results in the order of growth. Explain what do you see. \
 Hint: these data (data in long form) is not the simplest to compute growth. But you may want to check out the lag() function. And do not forget to group data by continent when using lag(), otherwise your results will be messed up! See [**https://faculty.washington.edu/otoomet/info201-book/dplyr.html#dplyr-helpers-compute**](https://faculty.washington.edu/otoomet/info201-book/dplyr.html#dplyr-helpers-compute).\
 ```{r}
-
+gm %>% 
+  filter(time %in% c("1960", "2016"), !is.na(lifeExpectancy), !is.na(region)) %>% 
+  group_by(region, time) %>% 
+  summarize(avgLE = mean(lifeExpectancy)) %>% 
+  summarize(prev = lag(avgLE), growth = avgLE - prev) %>% 
+  filter(!is.na(prev), !is.na(growth)) %>% 
+  arrange(rank(desc(growth)))
 ```
 
 
 
 6. (6pt) Show the histogram of GDP per capita for years of 1960 and 2019. Try to put both histograms on the same graph, see how well you can do it! \
 ```{r}
-
+gm %>%
+  group_by(region) %>% 
+  filter(time %in% c(1960, 2016), !is.na(GDP_PC), !is.na(region)) %>% 
+  ggplot(aes(GDP_PC, fill = factor(time))) + 
+  geom_histogram(position = "dodge", bins = 30)
 ```
 
 
@@ -267,13 +257,30 @@ Hint: these data (data in long form) is not the simplest to compute growth. But 
 Hint: check out the function rank()! \
 Hint2: 17 for 1960. \
 ```{r}
-
+gm %>% 
+  group_by(time) %>% 
+  filter(time %in% c(1960, 2016), !is.na(name)) %>% 
+  mutate(rank = rank(desc(lifeExpectancy))) %>% 
+  filter(iso2 == "US") %>% 
+  arrange(lifeExpectancy) %>%
+  select(lifeExpectancy, name, rank, time)
 ```
 
 
 
 8. (6pt) If you did this correctly, then you noticed that US ranking has been falling quite a bit. But we also have more countries in 2019–what about the relative rank divided by the corresponding number of countries that have LE data in the corresponding year? \
 Hint: 0.0904 for 1960. \
+```{r}
+gm %>% 
+  group_by(time) %>% 
+  filter(time %in% c(1960, 2016), !is.na(name), 
+         !is.na(lifeExpectancy), !is.na(region)) %>%
+  mutate(rank = rank(desc(lifeExpectancy))/n_distinct(iso2)) %>% 
+  filter(iso2 == "US") %>% 
+  select(name, rank, time, lifeExpectancy)
+```
+
+
 
 ---------------------------------------------------------------------
 
