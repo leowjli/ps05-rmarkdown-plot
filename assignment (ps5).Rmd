@@ -308,4 +308,4 @@ The relative rank divided by the corresponding number of countries that have lif
 ---------------------------------------------------------------------
 
 Finally tell us how many hours did you spend on this PS.\
-I spent around 4 hours on this assignment.\
+I spent around 4 hours on this assignment.
