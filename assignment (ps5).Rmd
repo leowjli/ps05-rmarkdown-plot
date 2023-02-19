@@ -242,7 +242,7 @@ Looks like the world has developed for the better as there are better living con
 Note: here as *average*I mean just average over countries, ignore the fact that countries are of different size.\
 ```{r message=FALSE}
 gm %>% 
-  filter(time %in% c("1960", "2016"), !is.na(lifeExpectancy)) %>% 
+  filter(time %in% c("1960", "2016"), !is.na(lifeExpectancy), !is.na(region)) %>% 
   group_by(region, time) %>% 
   summarize(avgLE = mean(lifeExpectancy))
 ```
