@@ -50,7 +50,7 @@ gm <- read_delim("../../data/gapminder.csv.bz2")
 We have `r nrow(gm)` rows and `r ncol(gm)` columns in the data set.
 
 3. (2pt) Print a small sample of data. Does it look OK? 
-```{r}
+```{r message=FALSE}
 sample_n(gm, 5)
 ```
 
@@ -161,7 +161,7 @@ Note: just compute averages over countries and ignore the fact that countries ar
 Hint: Americas 2016 should be 4.80. \
 ```{r message=FALSE}
 gm %>% 
-  filter(time %in% c("1960", "2016"), !is.na(co2_PC)) %>% 
+  filter(time %in% c("1960", "2016"), !is.na(co2_PC), !is.na(region)) %>% 
   group_by(region, time) %>% 
   summarize(avgco2 = mean(co2_PC))
 ```
